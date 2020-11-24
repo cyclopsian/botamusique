@@ -458,6 +458,38 @@ class MumbleBot:
                 else:
                     self.send_msg(var.config.get('strings', 'folder_empty'))
 
+            elif command == var.config.get('command', 'midi') and parameter:
+                if self.music_source and isinstance(self.music_source, MusicSourceFluidSynth):
+                    player = self.music_source.player
+                    midi_param = parameter.split(' ', 1)
+                    midi_val = midi_param[1] if len(midi_param) > 1 else None
+                    try:
+                        if midi_param[0] == 'bpm':
+                            if midi_val:
+                                player.set_bpm(int(midi_val))
+                                self.send_msg('MIDI BPM set to {}'.format(int(midi_val)))
+                            else:
+                                self.send_msg('MIDI BPM: {}'.format(player.bpm()))
+                        elif midi_param[0] == 'tempo':
+                            if midi_val:
+                                player.set_midi_tempo(int(midi_val))
+                                self.send_msg('MIDI Tempo set to {}'.format(int(midi_val)))
+                            else:
+                                self.send_msg('MIDI Tempo: {}'.format(player.midi_tempo()))
+                        elif midi_param[0] == 'loop':
+                            if midi_val:
+                                player.set_loop(int(midi_val))
+                                self.send_msg('Looping MIDI {} times'.format(int(midi_val)))
+                            else:
+                                self.send_msg('Usage: loop <value>')
+                        else:
+                            self.send_msg('invalid midi command ' + midi_param[0])
+                    except ValueError:
+                        self.send_msg('Not a valid integer: ' + midi_val)
+                else:
+                    self.send_msg('No midi playing!')
+
+
             elif command == var.config.get('command', 'queue'):
                 playlist = self.queue_work(lambda: [m.copy() for m in var.playlist]).wait()
                 if len(playlist) <= 1:
